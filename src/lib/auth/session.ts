@@ -22,7 +22,7 @@ function getSecretKey() {
 }
 
 export async function createSession(user: SessionUser) {
-  const token = await new SignJWT({ role: user.role })
+  const token = await new SignJWT({ avatarUrl: user.avatarUrl, nickname: user.nickname, qq: user.qq, role: user.role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -54,6 +54,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     const { payload } = await jwtVerify(token, getSecretKey());
     if (!payload.sub) {
       return null;
+    }
+
+    if (
+      typeof payload.qq === "string" &&
+      typeof payload.nickname === "string" &&
+      (typeof payload.avatarUrl === "string" || payload.avatarUrl === null || typeof payload.avatarUrl === "undefined") &&
+      (payload.role === Role.ADMIN || payload.role === Role.USER)
+    ) {
+      return {
+        avatarUrl: typeof payload.avatarUrl === "string" ? payload.avatarUrl : null,
+        id: payload.sub,
+        nickname: payload.nickname,
+        qq: payload.qq,
+        role: payload.role,
+      };
     }
 
     return prisma.user.findUnique({

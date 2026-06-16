@@ -316,6 +316,12 @@ textarea {
   transform: translateY(0) scale(0.98);
 }
 
+form[data-pending="true"] button[type="submit"] {
+  pointer-events: none;
+  opacity: 0.72;
+  animation: nav-pending-pulse 760ms ease-in-out infinite alternate;
+}
+
 .button.secondary {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.64);
@@ -324,6 +330,7 @@ textarea {
 
 .nav-link,
 .icon-button {
+  position: relative;
   display: inline-flex;
   min-height: 40px;
   align-items: center;
@@ -345,6 +352,11 @@ textarea {
   background: rgba(255, 91, 46, 0.12);
   color: #17130f;
   box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.nav-link-pending {
+  pointer-events: none;
+  animation: nav-pending-pulse 760ms ease-in-out infinite alternate;
 }
 
 .nav-link:hover svg,
@@ -531,6 +543,11 @@ details > summary:hover {
   0% { transform: scale(0.96); }
   70% { transform: scale(1.035); }
   100% { transform: scale(1); }
+}
+
+@keyframes nav-pending-pulse {
+  from { box-shadow: inset 0 0 0 1px rgba(0, 166, 166, 0.18), 0 0 0 rgba(0, 166, 166, 0); }
+  to { box-shadow: inset 0 0 0 1px rgba(0, 166, 166, 0.42), 0 8px 22px rgba(0, 166, 166, 0.14); }
 }
 
 @keyframes dropzone-pulse {

@@ -16,12 +16,12 @@ export function ActionResultForm({
   className?: string;
   successMessage?: string;
 }) {
-  const [state, formAction] = useActionState(action, initialActionResult);
+  const [state, formAction, isPending] = useActionState(action, initialActionResult);
   const [dismissedErrorId, setDismissedErrorId] = useState<number>();
   const visibleError = state.error && state.errorId !== dismissedErrorId ? state.error : undefined;
 
   return (
-    <form action={formAction} className={className}>
+    <form action={formAction} aria-busy={isPending} className={className} data-pending={isPending ? "true" : undefined}>
       <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(state.errorId)} />
       {children}
       {state.ok ? <p className="rounded-md bg-[#e4fbf4] px-3 py-2 text-sm font-black text-[#006b64]">{successMessage}</p> : null}

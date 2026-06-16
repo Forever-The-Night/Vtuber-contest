@@ -26,7 +26,7 @@ export function SubmissionUploadForm({
   const [previewUrl, setPreviewUrl] = useState("");
   const [compressionNotice, setCompressionNotice] = useState("");
   const [isDragging, setIsDragging] = useState(false);
-  const [state, formAction] = useActionState(uploadSubmissionWithResult, initialActionResult);
+  const [state, formAction, isPending] = useActionState(uploadSubmissionWithResult, initialActionResult);
   const [dismissedErrorId, setDismissedErrorId] = useState<number>();
   const visibleError = state.error && state.errorId !== dismissedErrorId ? state.error : undefined;
 
@@ -105,7 +105,7 @@ export function SubmissionUploadForm({
   }, [setFiles]);
 
   return (
-    <form action={formAction} className="panel grid gap-5 p-5">
+    <form action={formAction} aria-busy={isPending} className="panel grid gap-5 p-5" data-pending={isPending ? "true" : undefined}>
       <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(state.errorId)} />
       <input type="hidden" name="contestId" value={contestId} />
       <div className="flex flex-wrap items-center justify-between gap-3">

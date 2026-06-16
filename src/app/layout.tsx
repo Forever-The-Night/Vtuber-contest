@@ -5,9 +5,7 @@ import { Crown } from "lucide-react";
 import "./globals.css";
 import { AppNavLinks } from "@/components/AppNavLinks";
 import { getSessionUser } from "@/lib/auth/session";
-import { getContestPhase } from "@/lib/contest/rules";
-import { prisma } from "@/lib/db";
-import { formatDateTime } from "@/lib/format";
+import { getLayoutNavigationData } from "@/lib/layout-navigation";
 
 const notoSans = Noto_Sans_SC({
   variable: "--font-noto-sans-sc",
@@ -26,19 +24,17 @@ export const metadata: Metadata = {
   description: "A private VTuber themed AI image contest platform.",
 };
 
+export const preferredRegion = "sin1";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [user, contest, announcements] = await Promise.all([
+  const [user, navigation] = await Promise.all([
     getSessionUser(),
-    prisma.contest.findFirst({ orderBy: { submissionStartAt: "desc" } }),
-    prisma.announcement.findMany({ where: { enabled: true }, orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }], take: 10 }),
+    getLayoutNavigationData(),
   ]);
-  const phase = contest ? getContestPhase(contest) : null;
-  const canEnterSubmit = phase === "submissions" || phase === "voting";
-  const canEnterVote = phase === "voting";
 
   return (
     <html lang="zh-CN" className={`${notoSans.variable} ${displayFont.variable} h-full antialiased`}>
@@ -52,15 +48,9 @@ export default async function RootLayout({
               <span className="font-display text-2xl tracking-normal">啬图大赛</span>
             </Link>
             <AppNavLinks
-              announcements={announcements.map((announcement) => ({
-                body: announcement.body,
-                id: announcement.id,
-                pinned: announcement.pinned,
-                title: announcement.title,
-                updatedAt: formatDateTime(announcement.updatedAt),
-              }))}
-              canEnterSubmit={canEnterSubmit}
-              canEnterVote={canEnterVote}
+              announcements={navigation.announcements}
+              canEnterSubmit={navigation.canEnterSubmit}
+              canEnterVote={navigation.canEnterVote}
               user={user ? { nickname: user.nickname, role: user.role } : null}
             />
           </nav>

@@ -4,13 +4,14 @@ import { randomBytes } from "crypto";
 import { Role, SubmissionStatus, Track, VoteMode } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearSession, createSession, requireAdmin, requireUser } from "@/lib/auth/session";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { ActionResult, toActionError } from "@/lib/actions/result";
 import { canSubmit } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
+import { layoutNavigationTag } from "@/lib/layout-navigation";
 import { deleteImageUpload } from "@/lib/storage/uploads";
 
 function readString(formData: FormData, key: string) {
@@ -65,6 +66,10 @@ async function actionResult(task: () => Promise<void>): Promise<ActionResult> {
   } catch (error) {
     return { error: toActionError(error), errorId: Date.now(), ok: false };
   }
+}
+
+function revalidateLayoutNavigation() {
+  revalidateTag(layoutNavigationTag, "max");
 }
 
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -264,6 +269,7 @@ export async function createAnnouncement(formData: FormData) {
       title,
     },
   });
+  revalidateLayoutNavigation();
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/announcements");
@@ -285,6 +291,7 @@ export async function updateAnnouncement(formData: FormData) {
       title,
     },
   });
+  revalidateLayoutNavigation();
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/announcements");
@@ -296,6 +303,7 @@ export async function deleteAnnouncement(formData: FormData) {
   if (!announcementId) throw new Error("Announcement id is required.");
 
   await prisma.announcement.delete({ where: { id: announcementId } });
+  revalidateLayoutNavigation();
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/announcements");
@@ -323,6 +331,7 @@ export async function createContest(formData: FormData) {
       votingStartAt: readDate(formData, "votingStartAt"),
     },
   });
+  revalidateLayoutNavigation();
   revalidatePath("/admin/contests");
   revalidatePath("/");
 }
@@ -350,6 +359,7 @@ export async function updateContest(formData: FormData) {
       votingStartAt: readDate(formData, "votingStartAt"),
     },
   });
+  revalidateLayoutNavigation();
   revalidatePath("/admin/contests");
   revalidatePath("/");
   revalidatePath("/vote");
@@ -406,6 +416,7 @@ export async function setContestPhase(formData: FormData) {
   if (!contestId || !data) throw new Error("Invalid contest phase.");
 
   await prisma.contest.update({ where: { id: contestId }, data });
+  revalidateLayoutNavigation();
   revalidatePath("/admin/contests");
   revalidatePath("/");
   revalidatePath("/submit");
@@ -437,6 +448,7 @@ export async function deleteContest(formData: FormData) {
       target: contestId,
     },
   });
+  revalidateLayoutNavigation();
   revalidatePath("/admin/contests");
   revalidatePath("/");
   revalidatePath("/submit");
