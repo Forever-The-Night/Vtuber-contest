@@ -1,9 +1,7 @@
 "use client";
 
-import { useActionState, useOptimistic, useState } from "react";
-import { castVoteWithResult } from "@/app/actions";
+import { useState } from "react";
 import { ActionErrorDialog } from "@/components/ActionErrorDialog";
-import { initialActionResult } from "@/lib/actions/result";
 import { Eye, Lock, MessageCircle, Sparkles, ThumbsUp, X } from "lucide-react";
 
 type TrackName = "SFW" | "NSFW";
@@ -50,20 +48,41 @@ export function SubmissionCard({
   vtuberName,
 }: SubmissionCardProps) {
   const [open, setOpen] = useState(false);
-  const [state, formAction, isVoting] = useActionState(castVoteWithResult, initialActionResult);
-  const [optimisticVote, setOptimisticVote] = useOptimistic(
-    { hasVoted, votes },
-    (current, nextHasVoted: boolean) => ({
-      hasVoted: nextHasVoted,
-      votes: Math.max(0, current.votes + (nextHasVoted === current.hasVoted ? 0 : nextHasVoted ? 1 : -1)),
-    }),
-  );
+  const [optimisticVote, setOptimisticVote] = useState({ hasVoted, votes });
+  const [isVoting, setIsVoting] = useState(false);
+  const [voteError, setVoteError] = useState<string>();
   const [dismissedErrorId, setDismissedErrorId] = useState<number>();
-  const visibleError = state.error && state.errorId !== dismissedErrorId ? state.error : undefined;
+  const visibleError = voteError && dismissedErrorId !== 1 ? voteError : undefined;
 
-  function voteAction(formData: FormData) {
-    setOptimisticVote(!optimisticVote.hasVoted);
-    formAction(formData);
+  async function toggleVote() {
+    if (isVoting) return;
+    const previous = optimisticVote;
+    const nextHasVoted = !previous.hasVoted;
+    setVoteError(undefined);
+    setDismissedErrorId(undefined);
+    setIsVoting(true);
+    setOptimisticVote({
+      hasVoted: nextHasVoted,
+      votes: Math.max(0, previous.votes + (nextHasVoted ? 1 : -1)),
+    });
+
+    try {
+      const response = await fetch("/api/votes/toggle", {
+        body: JSON.stringify({ submissionId: id }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string; hasVoted?: boolean };
+      if (!response.ok) throw new Error(payload.error ?? "投票没有完成，请稍后重试。");
+      if (typeof payload.hasVoted === "boolean" && payload.hasVoted !== nextHasVoted) {
+        setOptimisticVote(previous);
+      }
+    } catch (error) {
+      setOptimisticVote(previous);
+      setVoteError(error instanceof Error ? error.message : "投票没有完成，请稍后重试。");
+    } finally {
+      setIsVoting(false);
+    }
   }
 
   function closeModal() {
@@ -72,7 +91,7 @@ export function SubmissionCard({
 
   return (
     <>
-      <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(state.errorId)} />
+      <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(1)} />
       <article className={`gallery-item overflow-hidden rounded-lg border shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl ${optimisticVote.hasVoted ? "border-[#d9a441] bg-[#fff4cf]" : "border-black/10 bg-white/80"}`}>
         <button className="block w-full text-left" type="button" onClick={() => setOpen(true)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -95,10 +114,7 @@ export function SubmissionCard({
             {showVotes ? <span className="ml-auto text-2xl font-black leading-none text-[#b97900]">{optimisticVote.votes}<small className="ml-1 text-xs text-[#6d6258]">赞</small></span> : null}
           </div>
           {canVote ? (
-            <form action={voteAction} aria-busy={isVoting} data-pending={isVoting ? "true" : undefined}>
-              <input type="hidden" name="submissionId" value={id} />
-              <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "投票"}</button>
-            </form>
+            <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="button" aria-busy={isVoting} onClick={toggleVote}><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "投票"}</button>
           ) : null}
         </div>
       </article>
@@ -130,10 +146,7 @@ export function SubmissionCard({
               {prompt ? <details><summary className="cursor-pointer font-black">Prompt</summary><p className="mt-2 whitespace-pre-wrap text-sm text-[#6d6258]">{prompt}</p></details> : null}
               {negativePrompt ? <details><summary className="cursor-pointer font-black">Negative Prompt</summary><p className="mt-2 whitespace-pre-wrap text-sm text-[#6d6258]">{negativePrompt}</p></details> : null}
               {canVote ? (
-                <form action={voteAction} aria-busy={isVoting} data-pending={isVoting ? "true" : undefined}>
-                  <input type="hidden" name="submissionId" value={id} />
-                  <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "给这张投票"}</button>
-                </form>
+                <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="button" aria-busy={isVoting} onClick={toggleVote}><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "给这张投票"}</button>
               ) : null}
             </aside>
           </div>

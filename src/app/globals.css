@@ -330,6 +330,11 @@ form[data-pending="true"] button[type="submit"] {
   animation: nav-pending-pulse 760ms ease-in-out infinite alternate;
 }
 
+button[aria-busy="true"] {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
 .button.secondary {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.64);
