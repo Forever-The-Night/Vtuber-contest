@@ -245,7 +245,15 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 250, 242, 0.86);
-  box-shadow: 0 20px 70px rgba(58, 39, 24, 0.09);
+  box-shadow: 0 12px 34px rgba(58, 39, 24, 0.07);
+}
+
+.page-shell > .panel,
+.page-shell > section,
+.page-shell > article,
+.gallery-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
 }
 
 .field {
@@ -448,9 +456,10 @@ form[data-pending="true"] button[type="submit"] {
   width: calc((100% - 8px) / var(--segments));
   border-radius: 8px;
   background: #17130f;
-  box-shadow: 0 10px 24px rgba(23, 19, 15, 0.18);
+  box-shadow: 0 6px 14px rgba(23, 19, 15, 0.14);
   transform: translateX(calc(var(--active-index) * 100%));
-  transition: transform 420ms cubic-bezier(.34, 1.56, .64, 1), background 220ms ease;
+  transition: transform 140ms ease-out, background 140ms ease;
+  will-change: transform;
 }
 
 .segmented-slider-option {
@@ -465,16 +474,12 @@ form[data-pending="true"] button[type="submit"] {
   padding: 9px 14px;
   text-align: center;
   color: #5b5047;
-  transition: color 180ms ease, transform 180ms ease;
+  transition: color 120ms ease;
 }
 
-.segmented-slider-option:has(:checked),
+.segmented-slider-option.is-active,
 .segmented-slider-option:hover {
   color: white;
-}
-
-.segmented-slider-option:hover {
-  transform: translateY(-1px);
 }
 
 .upload-dropzone {

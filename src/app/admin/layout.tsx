@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <h1 className="text-3xl font-black">管理后台</h1>
         <div className="mt-4 flex flex-wrap gap-2">
           {links.map(([href, label]) => (
-            <Link key={href} className="nav-link bg-white/60" href={href}>{label}</Link>
+            <Link key={href} className="nav-link bg-white/60" href={href} prefetch={false}>{label}</Link>
           ))}
         </div>
       </div>

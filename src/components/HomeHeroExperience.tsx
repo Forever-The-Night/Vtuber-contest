@@ -95,7 +95,7 @@ export function HomeHeroExperience({
         {current ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={current.id} src={current.imageUrl} alt={current.title} className={`home-hero-image ${panMode === "x" ? "is-panning-x" : panMode === "y" ? "is-panning-y" : ""}`} onLoad={detectPanMode} />
+            <img key={current.id} src={current.imageUrl} alt={current.title} className={`home-hero-image ${panMode === "x" ? "is-panning-x" : panMode === "y" ? "is-panning-y" : ""}`} decoding="async" fetchPriority="high" onLoad={detectPanMode} />
             <div className="home-image-caption">
               <p className="text-xs font-black uppercase text-[#ffd770]">SFW Featured</p>
               <h2 className="mt-1 line-clamp-2 text-2xl font-black text-white">{current.title}</h2>

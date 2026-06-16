@@ -30,7 +30,7 @@ export function MySubmissionManager({ submissions, vtuberNames }: { submissions:
         <details key={submission.id} className="panel overflow-hidden">
           <summary className="grid cursor-pointer grid-cols-[72px_1fr] items-center gap-3 p-3 sm:grid-cols-[96px_1fr_auto] sm:gap-4 sm:p-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={submission.imageUrl} alt={submission.title} className="size-18 rounded-md object-cover sm:size-24" />
+            <img src={submission.imageUrl} alt={submission.title} className="size-18 rounded-md object-cover sm:size-24" loading="lazy" decoding="async" />
             <span>
               <b className="text-lg text-[#17130f]">{submission.title}</b><br />
               <small className="font-bold text-[#6d6258]">{submission.track} / {submission.vtuberName}</small>

@@ -64,11 +64,11 @@ export function AppNavLinks({
 
   return (
     <div className="app-nav-links flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
-      <Link className={navClass(isRankings, effectivePendingHref === "/rankings")} href="/rankings" aria-current={isRankings ? "page" : undefined} onClick={() => markNavigation("/rankings")}>
+      <Link className={navClass(isRankings, effectivePendingHref === "/rankings")} href="/rankings" aria-current={isRankings ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/rankings")}>
         <Trophy size={16} /> 排名
       </Link>
       {canEnterVote ? (
-        <Link className={navClass(isVote, effectivePendingHref === "/vote")} href="/vote" aria-current={isVote ? "page" : undefined} onClick={() => markNavigation("/vote")}>
+        <Link className={navClass(isVote, effectivePendingHref === "/vote")} href="/vote" aria-current={isVote ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/vote")}>
           <ThumbsUp size={16} /> 投票
         </Link>
       ) : (
@@ -77,19 +77,19 @@ export function AppNavLinks({
       {user ? (
         <>
           {canEnterSubmit ? (
-            <Link className={navClass(isSubmit, effectivePendingHref === "/dashboard")} href="/dashboard" aria-current={isSubmit ? "page" : undefined} onClick={() => markNavigation("/dashboard")}>
+            <Link className={navClass(isSubmit, effectivePendingHref === "/dashboard")} href="/dashboard" aria-current={isSubmit ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/dashboard")}>
               <ImageUp size={16} /> 投稿
             </Link>
           ) : (
             <DisabledNavItem title="当前不在投稿期"><ImageUp size={16} /> 投稿</DisabledNavItem>
           )}
           {user.role === "ADMIN" ? (
-            <Link className={navClass(isAdmin, effectivePendingHref === "/admin")} href="/admin" aria-current={isAdmin ? "page" : undefined} onClick={() => markNavigation("/admin")}>
+            <Link className={navClass(isAdmin, effectivePendingHref === "/admin")} href="/admin" aria-current={isAdmin ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/admin")}>
               <Shield size={16} /> 后台
             </Link>
           ) : null}
-          <Link className={`icon-button sm:hidden ${effectivePendingHref === "/account" ? "nav-link-pending" : ""}`} href="/account" title="账户设置" onClick={() => markNavigation("/account")}><UserRound size={16} /></Link>
-          <Link className={`hidden rounded-md bg-black/5 px-3 py-2 text-[#5b5047] sm:inline-flex ${effectivePendingHref === "/account" ? "nav-link-pending" : ""}`} href="/account" onClick={() => markNavigation("/account")}>{user.nickname}</Link>
+          <Link className={`icon-button sm:hidden ${effectivePendingHref === "/account" ? "nav-link-pending" : ""}`} href="/account" title="账户设置" prefetch={false} onClick={() => markNavigation("/account")}><UserRound size={16} /></Link>
+          <Link className={`hidden rounded-md bg-black/5 px-3 py-2 text-[#5b5047] sm:inline-flex ${effectivePendingHref === "/account" ? "nav-link-pending" : ""}`} href="/account" prefetch={false} onClick={() => markNavigation("/account")}>{user.nickname}</Link>
           {announcements.length ? (
             <button className="icon-button relative" type="button" title="查看公告" onClick={openAnnouncements}>
               <Megaphone size={16} />
@@ -102,10 +102,10 @@ export function AppNavLinks({
         </>
       ) : (
         <>
-          <Link className={navClass(pathname.startsWith("/login"), effectivePendingHref === "/login")} href="/login" onClick={() => markNavigation("/login")}>
+          <Link className={navClass(pathname.startsWith("/login"), effectivePendingHref === "/login")} href="/login" prefetch={false} onClick={() => markNavigation("/login")}>
             <UserRound size={16} /> 登录
           </Link>
-          <Link className={`primary-link ${effectivePendingHref === "/register" ? "nav-link-pending" : ""}`} href="/register" onClick={() => markNavigation("/register")}>注册</Link>
+          <Link className={`primary-link ${effectivePendingHref === "/register" ? "nav-link-pending" : ""}`} href="/register" prefetch={false} onClick={() => markNavigation("/register")}>注册</Link>
         </>
       )}
 

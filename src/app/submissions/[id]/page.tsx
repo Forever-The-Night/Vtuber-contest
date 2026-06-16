@@ -32,7 +32,7 @@ export default async function SubmissionPage({ params }: { params: Promise<{ id:
     <main className="page-shell grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <section className="panel overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={submission.imageUrl} alt={submission.title} className="mx-auto max-h-[78dvh] w-full bg-[#eadfd0] object-contain" />
+        <img src={submission.imageUrl} alt={submission.title} className="mx-auto max-h-[78dvh] w-full bg-[#eadfd0] object-contain" decoding="async" fetchPriority="high" />
       </section>
       <aside className="grid content-start gap-4">
         <section className="panel grid gap-4 p-5">

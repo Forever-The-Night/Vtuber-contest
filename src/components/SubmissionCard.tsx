@@ -64,7 +64,7 @@ export function SubmissionCard({
       <article className={`gallery-item overflow-hidden rounded-lg border shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl ${hasVoted ? "border-[#d9a441] bg-[#fff4cf]" : "border-black/10 bg-white/80"}`}>
         <button className="block w-full text-left" type="button" onClick={() => setOpen(true)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt={title} className="w-full bg-[#eadfd0] object-cover" loading="lazy" />
+          <img src={imageUrl} alt={title} className="w-full bg-[#eadfd0] object-cover" loading="lazy" decoding="async" />
         </button>
         <div className="grid gap-3 p-3">
           <div className="flex items-start justify-between gap-3">
@@ -96,7 +96,7 @@ export function SubmissionCard({
           <div className="modal-surface grid max-h-[92dvh] w-full max-w-6xl overflow-hidden rounded-lg bg-[#fffaf2] shadow-2xl lg:grid-cols-[minmax(0,1fr)_360px]" onMouseDown={(event) => event.stopPropagation()}>
             <div className="overflow-auto bg-[#201a16]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt={title} className="mx-auto max-h-[52dvh] w-auto max-w-full object-contain lg:max-h-[92dvh]" />
+              <img src={imageUrl} alt={title} className="mx-auto max-h-[52dvh] w-auto max-w-full object-contain lg:max-h-[92dvh]" decoding="async" />
             </div>
             <aside className="grid max-h-[40dvh] content-start gap-4 overflow-auto p-4 lg:max-h-[92dvh] lg:p-5">
               <div className="flex items-start justify-between gap-3">

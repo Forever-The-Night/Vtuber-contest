@@ -18,7 +18,7 @@ export function SegmentedSwitch({
     <div className="segmented-slider" style={{ "--segments": options.length, "--active-index": activeIndex } as React.CSSProperties}>
       <span className="segmented-indicator" aria-hidden="true" />
       {options.map((option, index) => (
-        <label key={option.value} className="segmented-slider-option">
+        <label key={option.value} className={`segmented-slider-option ${activeIndex === index ? "is-active" : ""}`}>
           <input
             className="sr-only"
             type="radio"

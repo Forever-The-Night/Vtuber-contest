@@ -20,7 +20,7 @@ export function RankingImagePreview({
     <>
       <button className={`preview-trigger overflow-hidden ${buttonClassName}`} type="button" onClick={() => setOpen(true)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt={title} className={imageClassName} loading="lazy" />
+        <img src={imageUrl} alt={title} className={imageClassName} loading="lazy" decoding="async" />
       </button>
       {open ? (
         <div className="modal-backdrop fixed inset-0 z-50 grid place-items-center bg-[#17130f]/60 p-4 backdrop-blur-md" role="dialog" aria-modal="true" onMouseDown={() => setOpen(false)}>
@@ -33,7 +33,7 @@ export function RankingImagePreview({
             </div>
             <div className="overflow-auto bg-[#201a16]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt={title} className="mx-auto max-h-[78dvh] w-auto max-w-full object-contain sm:max-h-[84dvh]" />
+              <img src={imageUrl} alt={title} className="mx-auto max-h-[78dvh] w-auto max-w-full object-contain sm:max-h-[84dvh]" decoding="async" />
             </div>
           </div>
         </div>

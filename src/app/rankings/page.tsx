@@ -94,7 +94,8 @@ export default async function RankingsPage({ searchParams }: { searchParams: Pro
             <Link
               key={value}
               href={`/rankings?board=${value}`}
-              className={`segmented-slider-option ${board === value ? "text-white" : "text-[#5b5047]"}`}
+              className={`segmented-slider-option ${board === value ? "is-active text-white" : "text-[#5b5047]"}`}
+              prefetch={false}
             >
               {label}
             </Link>
