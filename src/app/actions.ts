@@ -544,7 +544,6 @@ export async function castVote(formData: FormData) {
     await prisma.vote.delete({ where: { id: existingVote.id } });
     revalidatePath("/");
     revalidatePath("/vote");
-    revalidatePath("/dashboard");
     revalidatePath("/rankings");
     revalidatePath(`/submissions/${submissionId}`);
     return;
@@ -572,7 +571,6 @@ export async function castVote(formData: FormData) {
   });
   revalidatePath("/");
   revalidatePath("/vote");
-  revalidatePath("/dashboard");
   revalidatePath(`/submissions/${submissionId}`);
   revalidatePath("/rankings");
 }

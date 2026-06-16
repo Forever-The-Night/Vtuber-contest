@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useOptimistic, useState } from "react";
 import { castVoteWithResult } from "@/app/actions";
 import { ActionErrorDialog } from "@/components/ActionErrorDialog";
 import { initialActionResult } from "@/lib/actions/result";
@@ -50,9 +50,21 @@ export function SubmissionCard({
   vtuberName,
 }: SubmissionCardProps) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(castVoteWithResult, initialActionResult);
+  const [state, formAction, isVoting] = useActionState(castVoteWithResult, initialActionResult);
+  const [optimisticVote, setOptimisticVote] = useOptimistic(
+    { hasVoted, votes },
+    (current, nextHasVoted: boolean) => ({
+      hasVoted: nextHasVoted,
+      votes: Math.max(0, current.votes + (nextHasVoted === current.hasVoted ? 0 : nextHasVoted ? 1 : -1)),
+    }),
+  );
   const [dismissedErrorId, setDismissedErrorId] = useState<number>();
   const visibleError = state.error && state.errorId !== dismissedErrorId ? state.error : undefined;
+
+  function voteAction(formData: FormData) {
+    setOptimisticVote(!optimisticVote.hasVoted);
+    formAction(formData);
+  }
 
   function closeModal() {
     setOpen(false);
@@ -61,7 +73,7 @@ export function SubmissionCard({
   return (
     <>
       <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(state.errorId)} />
-      <article className={`gallery-item overflow-hidden rounded-lg border shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl ${hasVoted ? "border-[#d9a441] bg-[#fff4cf]" : "border-black/10 bg-white/80"}`}>
+      <article className={`gallery-item overflow-hidden rounded-lg border shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl ${optimisticVote.hasVoted ? "border-[#d9a441] bg-[#fff4cf]" : "border-black/10 bg-white/80"}`}>
         <button className="block w-full text-left" type="button" onClick={() => setOpen(true)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={imageUrl} alt={title} className="w-full bg-[#eadfd0] object-cover" loading="lazy" decoding="async" />
@@ -80,12 +92,12 @@ export function SubmissionCard({
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-[#6d6258]">
             <span className="inline-flex items-center gap-1"><Eye size={14} /> {views}</span>
             <span className="inline-flex items-center gap-1"><MessageCircle size={14} /> {comments}</span>
-            {showVotes ? <span className="ml-auto text-2xl font-black leading-none text-[#b97900]">{votes}<small className="ml-1 text-xs text-[#6d6258]">赞</small></span> : null}
+            {showVotes ? <span className="ml-auto text-2xl font-black leading-none text-[#b97900]">{optimisticVote.votes}<small className="ml-1 text-xs text-[#6d6258]">赞</small></span> : null}
           </div>
           {canVote ? (
-            <form action={formAction}>
+            <form action={voteAction} aria-busy={isVoting} data-pending={isVoting ? "true" : undefined}>
               <input type="hidden" name="submissionId" value={id} />
-              <button className={`button vote-button w-full ${hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {hasVoted ? "取消投票" : "投票"}</button>
+              <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "投票"}</button>
             </form>
           ) : null}
         </div>
@@ -118,9 +130,9 @@ export function SubmissionCard({
               {prompt ? <details><summary className="cursor-pointer font-black">Prompt</summary><p className="mt-2 whitespace-pre-wrap text-sm text-[#6d6258]">{prompt}</p></details> : null}
               {negativePrompt ? <details><summary className="cursor-pointer font-black">Negative Prompt</summary><p className="mt-2 whitespace-pre-wrap text-sm text-[#6d6258]">{negativePrompt}</p></details> : null}
               {canVote ? (
-                <form action={formAction}>
+                <form action={voteAction} aria-busy={isVoting} data-pending={isVoting ? "true" : undefined}>
                   <input type="hidden" name="submissionId" value={id} />
-                  <button className={`button vote-button w-full ${hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {hasVoted ? "取消投票" : "给这张投票"}</button>
+                  <button className={`button vote-button w-full ${optimisticVote.hasVoted ? "has-voted bg-[#d9a441] text-[#17130f]" : ""}`} type="submit"><ThumbsUp size={16} /> {optimisticVote.hasVoted ? "取消投票" : "给这张投票"}</button>
                 </form>
               ) : null}
             </aside>
