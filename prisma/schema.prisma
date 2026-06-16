@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Track {
+  SFW
+  NSFW
+}
+
+enum SubmissionStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+}
+
+enum VoteMode {
+  SIMPLE
+  DAILY_POOL
+  ARENA
+}
+
+model User {
+  id           String       @id @default(cuid())
+  qq           String       @unique
+  nickname     String
+  passwordHash String
+  avatarUrl    String?
+  role         Role         @default(USER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  announcements Announcement[]
+  comments     Comment[]
+  submissions  Submission[]
+  viewEvents   ViewEvent[]
+  votes        Vote[]
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  enabled   Boolean  @default(true)
+  pinned    Boolean  @default(false)
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([enabled, pinned, updatedAt])
+}
+
+model WhitelistEntry {
+  id         String   @id @default(cuid())
+  qq         String   @unique
+  inviteCode String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model VtuberName {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contest {
+  id                    String       @id @default(cuid())
+  title                 String
+  slug                  String       @unique
+  description           String?
+  submissionStartAt     DateTime
+  submissionEndAt       DateTime
+  votingStartAt         DateTime
+  votingEndAt           DateTime
+  resultsAt             DateTime
+  showVotesDuringVoting Boolean      @default(false)
+  showRanksDuringVoting Boolean      @default(false)
+  voteMode              VoteMode     @default(SIMPLE)
+  totalVoteLimit        Int          @default(20)
+  dailyVoteLimit        Int          @default(20)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  comments              Comment[]
+  submissions           Submission[]
+  votes                 Vote[]
+}
+
+model Submission {
+  id             String           @id @default(cuid())
+  contestId      String
+  authorId       String
+  track          Track
+  title          String
+  description    String?
+  vtuberName     String
+  imageUrl       String
+  storageKey     String
+  status         SubmissionStatus @default(ACTIVE)
+  modelName      String?
+  toolName       String?
+  prompt         String?
+  negativePrompt String?
+  seed           String?
+  width          Int?
+  height         Int?
+  rawMetadata    String?
+  tags           String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  author         User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments       Comment[]
+  contest        Contest          @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  viewEvents     ViewEvent[]
+  votes          Vote[]
+
+  @@index([contestId, track, status])
+  @@index([authorId, contestId])
+}
+
+model Vote {
+  id           String     @id @default(cuid())
+  contestId    String
+  submissionId String
+  userId       String
+  value        Int        @default(1)
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime   @default(now())
+  contest      Contest    @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, submissionId, userId])
+  @@index([contestId, createdAt])
+}
+
+model Comment {
+  id           String     @id @default(cuid())
+  body         String
+  contestId    String
+  submissionId String
+  authorId     String
+  createdAt    DateTime   @default(now())
+  author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  contest      Contest    @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, createdAt])
+}
+
+model ViewEvent {
+  id           String     @id @default(cuid())
+  submissionId String
+  viewerId     String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime   @default(now())
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  viewer       User?      @relation(fields: [viewerId], references: [id], onDelete: SetNull)
+
+  @@index([submissionId, createdAt])
+}
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  target    String
+  detail    String?
+  createdAt DateTime @default(now())
+}

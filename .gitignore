@@ -19,6 +19,13 @@
 
 # production
 /build
+/uploads
+/public/uploads
+/prisma/*.db
+/prisma/*.db-journal
+/prisma/schema.local.sqlite.prisma
+/data/*.json
+/scripts/generated/
 
 # misc
 .DS_Store
@@ -32,6 +39,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
