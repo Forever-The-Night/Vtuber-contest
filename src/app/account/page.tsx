@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { changeOwnPasswordWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
 import { requireUser } from "@/lib/auth/session";
@@ -5,6 +6,10 @@ import { formatDateTime } from "@/lib/format";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "账户设置",
+};
 
 export default async function AccountPage() {
   const sessionUser = await requireUser();

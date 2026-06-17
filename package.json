@@ -9,6 +9,7 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
+    "test": "vitest run",
     "data:cleanup-local": "node scripts/cleanup-local-data.mjs",
     "data:export-preserved": "prisma generate --schema scripts/sqlite-preserve.prisma && node scripts/export-preserved-sqlite.mjs",
     "data:import-preserved": "prisma generate && node scripts/import-preserved-postgres.mjs",
@@ -42,6 +43,7 @@
     "eslint-config-next": "16.2.9",
     "prisma": "^6.19.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.9"
   }
 }

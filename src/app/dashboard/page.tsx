@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { MySubmissionManager } from "@/components/MySubmissionManager";
 import { SubmissionUploadForm } from "@/components/SubmissionUploadForm";
 import { requireUser } from "@/lib/auth/session";
@@ -5,6 +6,10 @@ import { canSubmit } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "我的投稿",
+};
 
 export default async function DashboardPage() {
   const user = await requireUser();

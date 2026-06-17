@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Track } from "@prisma/client";
 import { EmptyState } from "@/components/EmptyState";
 import { HomeHeroExperience } from "@/components/HomeHeroExperience";
@@ -6,6 +7,10 @@ import { getContestPhase, shouldShowVotes } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "首页",
+};
 
 const phaseLabels = {
   scheduled: "未开始",
@@ -59,7 +64,7 @@ export default async function Home() {
           primaryLabel={user ? "创建比赛" : "登录后参与"}
           showSetupLink={userCount === 0}
           subtitle="管理员创建届次后，首页会展示当前比赛、阶段倒计时和 SFW 热门作品。"
-          title="啬图大赛"
+          title="维AI信"
         />
         <EmptyState title="还没有比赛届次">创建首位管理员后，在后台添加第一届比赛。</EmptyState>
       </main>
@@ -96,6 +101,7 @@ export default async function Home() {
         primaryLabel={user ? copy.cta : "登录后参与"}
         showSetupLink={userCount === 0}
         subtitle={copy.text}
+        themeDescription={contest.description}
         targetAt={target?.toISOString()}
         title={contest.title}
       />

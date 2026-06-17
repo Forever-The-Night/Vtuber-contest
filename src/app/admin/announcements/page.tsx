@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { createAnnouncementWithResult, deleteAnnouncementWithResult, updateAnnouncementWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "公告管理",
+};
 
 export default async function AdminAnnouncementsPage() {
   const announcements = await prisma.announcement.findMany({

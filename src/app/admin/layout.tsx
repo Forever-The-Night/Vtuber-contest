@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/session";
 
@@ -11,6 +12,13 @@ const links = [
   ["/admin/submissions", "作品"],
   ["/admin/votes", "投票日志"],
 ];
+
+export const metadata: Metadata = {
+  title: {
+    default: "管理后台",
+    template: "%s - 维AI信",
+  },
+};
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();

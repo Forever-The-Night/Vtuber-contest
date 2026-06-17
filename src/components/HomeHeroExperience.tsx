@@ -26,6 +26,7 @@ export function HomeHeroExperience({
   primaryLabel,
   showSetupLink,
   targetAt,
+  themeDescription,
   title,
   subtitle,
 }: {
@@ -37,6 +38,7 @@ export function HomeHeroExperience({
   primaryLabel: string;
   showSetupLink: boolean;
   targetAt?: string;
+  themeDescription?: string | null;
   title: string;
   subtitle: string;
 }) {
@@ -112,6 +114,11 @@ export function HomeHeroExperience({
         <div>
           <p className="mb-4 inline-flex rounded-md bg-[#ff5b2e]/10 px-3 py-2 text-sm font-black uppercase text-[#ff5b2e]">Private VTuber Gallery Contest</p>
           <h1 className="font-display text-6xl leading-none text-[#17130f] sm:text-8xl lg:text-9xl">{title}</h1>
+          {themeDescription ? (
+            <p className="mt-4 max-w-2xl rounded-lg border border-[#17130f]/10 bg-white/60 px-4 py-3 text-sm font-bold leading-7 text-[#5b5047] backdrop-blur-md">
+              本次比赛主题：{themeDescription}
+            </p>
+          ) : null}
           <p className="mt-6 max-w-xl text-base font-bold leading-8 text-[#5b5047]">{subtitle}</p>
         </div>
 

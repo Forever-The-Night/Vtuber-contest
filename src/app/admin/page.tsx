@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "后台总览",
+};
 
 function dayLabel(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", { day: "2-digit", month: "2-digit" }).format(date);

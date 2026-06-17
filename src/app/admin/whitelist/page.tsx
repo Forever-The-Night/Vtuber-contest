@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { addWhitelistEntryWithResult, generateMissingInviteCodesWithResult, importWhitelistWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "白名单管理",
+};
 
 export default async function AdminWhitelistPage() {
   const entries = await prisma.whitelistEntry.findMany({ orderBy: { createdAt: "desc" }, take: 100 });

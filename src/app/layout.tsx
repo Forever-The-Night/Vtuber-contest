@@ -20,8 +20,11 @@ const displayFont = ZCOOL_QingKe_HuangYou({
 });
 
 export const metadata: Metadata = {
-  title: "VTuber AI Image Contest",
-  description: "A private VTuber themed AI image contest platform.",
+  title: {
+    default: "维AI信",
+    template: "%s - 维AI信",
+  },
+  description: "维AI信：面向 VTuber 的 AI 图像赛事平台。",
 };
 
 export const preferredRegion = "sin1";
@@ -45,7 +48,7 @@ export default async function RootLayout({
               <span className="grid size-9 place-items-center rounded-md bg-[#ff5b2e] text-white">
                 <Crown size={20} />
               </span>
-              <span className="font-display text-2xl tracking-normal">啬图大赛</span>
+              <span className="font-display text-2xl tracking-normal">维AI信</span>
             </Link>
             <AppNavLinks
               announcements={navigation.announcements}

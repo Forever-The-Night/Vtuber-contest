@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { adminUpdateUserPasswordWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "用户管理",
+};
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({

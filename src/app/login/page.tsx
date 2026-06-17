@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { loginUser } from "@/app/actions";
+
+export const metadata: Metadata = {
+  title: "登录",
+};
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { addVtuberNameWithResult, importVtubersWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "VTuber 名单",
+};
 
 export default async function AdminVtubersPage() {
   const names = await prisma.vtuberName.findMany({ orderBy: { name: "asc" }, take: 500 });

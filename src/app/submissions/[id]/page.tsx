@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { castVote, createComment } from "@/app/actions";
 import { getSessionUser } from "@/lib/auth/session";
@@ -6,6 +7,18 @@ import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const submission = await prisma.submission.findUnique({
+    where: { id },
+    select: { title: true },
+  });
+
+  return {
+    title: submission?.title ?? "作品详情",
+  };
+}
 
 export default async function SubmissionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

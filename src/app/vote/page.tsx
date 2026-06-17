@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Track, VoteMode } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -7,6 +8,10 @@ import { canViewSubmission, getContestPhase } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "投票",
+};
 
 function splitVtuberNames(value: string) {
   return value.split(/[、，,]/).map((name) => name.trim()).filter(Boolean);

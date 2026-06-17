@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SubmissionStatus } from "@prisma/client";
 import { setSubmissionStatusWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
@@ -5,6 +6,10 @@ import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "作品管理",
+};
 
 export default async function AdminSubmissionsPage() {
   const submissions = await prisma.submission.findMany({

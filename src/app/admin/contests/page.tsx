@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { VoteMode } from "@prisma/client";
 import { createContestWithResult, setContestPhaseWithResult, updateContestWithResult } from "@/app/actions";
 import { ActionResultForm } from "@/components/ActionResultForm";
@@ -8,12 +9,16 @@ import { formatDateTime, toDateTimeLocalValue } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "比赛管理",
+};
+
 function CreateContestForm({ className, defaults, titleClassName }: { className: string; defaults: Array<[string, [string, string]]>; titleClassName: string }) {
   return (
     <ActionResultForm action={createContestWithResult} className={className} successMessage="届次已创建。">
       <h2 className={titleClassName}>创建比赛届次</h2>
       <label className="field">标题<input className="input" name="title" required /></label>
-      <label className="field">说明<textarea className="input min-h-24" name="description" /></label>
+      <label className="field">主题描述<textarea className="input min-h-24" name="description" placeholder="例如：夏日祭、城市夜景、偶像舞台等" /></label>
       {defaults.map(([label, [name, value]]) => (
         <label key={name} className="field">{label}<input className="input" name={name} type="datetime-local" defaultValue={value} required /></label>
       ))}
@@ -75,7 +80,7 @@ export default async function AdminContestsPage() {
               <input type="hidden" name="contestId" value={contest.id} />
               <div className="grid gap-3 md:grid-cols-2">
                 <label className="field">项目名<input className="input" name="title" defaultValue={contest.title} required /></label>
-                <label className="field">说明<input className="input" name="description" defaultValue={contest.description ?? ""} /></label>
+                <label className="field">主题描述<input className="input" name="description" defaultValue={contest.description ?? ""} placeholder="例如：夏日祭、城市夜景、偶像舞台等" /></label>
                 {dateFields.map(([label, name]) => (
                   <label key={name} className="field">{label}<input className="input" name={name} type="datetime-local" defaultValue={toDateTimeLocalValue(contest[name])} required /></label>
                 ))}

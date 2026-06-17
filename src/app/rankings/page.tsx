@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Track } from "@prisma/client";
 import { EmptyState } from "@/components/EmptyState";
 import { RankingsBoardClient } from "@/components/RankingsBoardClient";
@@ -5,6 +6,10 @@ import { shouldShowRanks, shouldShowVotes } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "排行榜",
+};
 
 export default async function RankingsPage() {
   const contest = await prisma.contest.findFirst({ orderBy: { submissionStartAt: "desc" } });

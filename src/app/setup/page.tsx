@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { bootstrapAdmin } from "@/app/actions";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "初始化",
+};
 
 export default async function SetupPage() {
   const userCount = await prisma.user.count();
