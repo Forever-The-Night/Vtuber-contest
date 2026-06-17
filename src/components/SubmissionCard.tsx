@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ActionErrorDialog } from "@/components/ActionErrorDialog";
 import { Eye, Lock, MessageCircle, Sparkles, ThumbsUp, X } from "lucide-react";
 
@@ -24,11 +25,13 @@ type SubmissionCardProps = {
   votes?: number;
   views?: number;
   comments?: number;
+  canManageTrack?: boolean;
   showVotes?: boolean;
 };
 
 export function SubmissionCard({
   authorName,
+  canManageTrack = false,
   canVote = false,
   comments = 0,
   description,
@@ -47,12 +50,42 @@ export function SubmissionCard({
   votes = 0,
   vtuberName,
 }: SubmissionCardProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState(track);
   const [optimisticVote, setOptimisticVote] = useState({ hasVoted, votes });
   const [isVoting, setIsVoting] = useState(false);
+  const [isUpdatingTrack, setIsUpdatingTrack] = useState(false);
   const [voteError, setVoteError] = useState<string>();
   const [dismissedErrorId, setDismissedErrorId] = useState<number>();
   const visibleError = voteError && dismissedErrorId !== 1 ? voteError : undefined;
+
+  async function toggleTrack() {
+    if (!canManageTrack || isUpdatingTrack) return;
+    const previous = currentTrack;
+    const nextTrack = previous === "NSFW" ? "SFW" : "NSFW";
+    setVoteError(undefined);
+    setDismissedErrorId(undefined);
+    setIsUpdatingTrack(true);
+    setCurrentTrack(nextTrack);
+
+    try {
+      const response = await fetch("/api/submissions/track", {
+        body: JSON.stringify({ submissionId: id, track: nextTrack }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string; track?: TrackName };
+      if (!response.ok) throw new Error(payload.error ?? "赛道修改失败，请稍后重试。");
+      if (payload.track) setCurrentTrack(payload.track);
+      router.refresh();
+    } catch (error) {
+      setCurrentTrack(previous);
+      setVoteError(error instanceof Error ? error.message : "赛道修改失败，请稍后重试。");
+    } finally {
+      setIsUpdatingTrack(false);
+    }
+  }
 
   async function toggleVote() {
     if (isVoting) return;
@@ -89,6 +122,9 @@ export function SubmissionCard({
     setOpen(false);
   }
 
+  const trackBadgeClass = `inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-black ${currentTrack === "NSFW" ? "bg-[#1b1515] text-white" : "bg-[#e4fbf4] text-[#006b64]"}`;
+  const trackBadgeContent = <>{currentTrack === "NSFW" ? <Lock size={12} /> : <Sparkles size={12} />}{currentTrack}</>;
+
   return (
     <>
       <ActionErrorDialog error={visibleError} onClose={() => setDismissedErrorId(1)} />
@@ -103,10 +139,11 @@ export function SubmissionCard({
               <h3 className="line-clamp-2 font-bold text-[#17130f]">{title}</h3>
               <p className="text-sm text-[#6d6258]">{vtuberName} / {authorName}</p>
             </div>
-            <span className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-black ${track === "NSFW" ? "bg-[#1b1515] text-white" : "bg-[#e4fbf4] text-[#006b64]"}`}>
-              {track === "NSFW" ? <Lock size={12} /> : <Sparkles size={12} />}
-              {track}
-            </span>
+            {canManageTrack ? (
+              <button className={`${trackBadgeClass} transition hover:scale-105`} type="button" aria-busy={isUpdatingTrack} title="切换 SFW / NSFW" onClick={toggleTrack}>{trackBadgeContent}</button>
+            ) : (
+              <span className={trackBadgeClass}>{trackBadgeContent}</span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-[#6d6258]">
             <span className="inline-flex items-center gap-1"><Eye size={14} /> {views}</span>
@@ -129,7 +166,11 @@ export function SubmissionCard({
             <aside className="grid max-h-[40dvh] content-start gap-4 overflow-auto p-4 lg:max-h-[92dvh] lg:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="inline-flex rounded-md bg-black/5 px-2 py-1 text-xs font-black">{track}</span>
+                  {canManageTrack ? (
+                    <button className={`${trackBadgeClass} transition hover:scale-105`} type="button" aria-busy={isUpdatingTrack} title="切换 SFW / NSFW" onClick={toggleTrack}>{trackBadgeContent}</button>
+                  ) : (
+                    <span className="inline-flex rounded-md bg-black/5 px-2 py-1 text-xs font-black">{currentTrack}</span>
+                  )}
                   <h2 className="mt-3 text-2xl font-black text-[#17130f]">{title}</h2>
                   <p className="mt-1 text-sm font-bold text-[#6d6258]">{vtuberName} / {authorName}</p>
                 </div>

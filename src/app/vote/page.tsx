@@ -107,6 +107,7 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
     [Track.NSFW]: Math.max(0, voteLimit[Track.NSFW] - voteUsage[Track.NSFW]),
   };
   const canVote = Boolean(user && phase === "voting");
+  const canManageTrack = user?.role === "ADMIN";
   const visibleSubmissions = submissions.filter((submission) => canViewSubmission(submission, contest, user));
   const visibleByTrack = visibleSubmissions.filter((submission) => submission.track === selectedTrack);
   const vtuberOptions = Array.from(new Set(visibleByTrack.flatMap((submission) => splitVtuberNames(submission.vtuberName)))).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
@@ -207,6 +208,7 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
       <SubmissionGrid
         items={filteredSubmissions.map((submission) => ({
           authorName: hideAuthorName ? "匿名作者" : submission.author.nickname,
+          canManageTrack,
           canVote: canVote && (remainingVotes[submission.track] > 0 || votedSubmissionIds.has(submission.id)),
           comments: submission._count.comments,
           description: submission.description,
