@@ -210,6 +210,19 @@ textarea {
   width: min(360px, calc(100vw - 2.5rem));
 }
 
+.vote-page-shell {
+  overflow-x: clip;
+}
+
+.vote-page-shell > * {
+  min-width: 0;
+}
+
+.vote-page-shell .interactive-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .announcement-modal-backdrop {
   align-items: start;
   padding-top: clamp(96px, 14vh, 150px);

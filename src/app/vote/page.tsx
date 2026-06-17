@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Track, VoteMode } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { SubmissionGrid } from "@/components/SubmissionGrid";
+import { VotePageScrollReset } from "@/components/VotePageScrollReset";
 import { getSessionUser } from "@/lib/auth/session";
 import { canViewSubmission, getContestPhase } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
@@ -142,7 +143,8 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
   }
 
   return (
-    <main className="page-shell grid gap-6">
+    <main className="vote-page-shell page-shell grid gap-6">
+      <VotePageScrollReset />
       <section className="panel flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
           <h1 className="text-3xl font-black">投票页面</h1>
