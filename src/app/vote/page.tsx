@@ -4,6 +4,7 @@ import { Track, VoteMode } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { SubmissionGrid } from "@/components/SubmissionGrid";
 import { VotePageScrollReset } from "@/components/VotePageScrollReset";
+import { VoteQuotaPanel } from "@/components/VoteQuotaPanel";
 import { getSessionUser } from "@/lib/auth/session";
 import { canViewSubmission, getContestPhase } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
@@ -153,21 +154,13 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
         <span className="rounded-md bg-black/5 px-3 py-2 text-sm font-black text-[#5b5047]">{contest.title}</span>
       </section>
       {user && phase === "voting" ? (
-        <aside className="vote-quota-panel rounded-lg border border-black/10 bg-[#fffaf2]/95 p-4 shadow-2xl backdrop-blur-md">
-          <p className="text-xs font-black text-[#6d6258]">{contest.voteMode === VoteMode.DAILY_POOL ? "今日剩余票数（分赛道）" : "本届剩余票数（分赛道）"}</p>
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <div className={`rounded-md px-3 py-2 ${selectedTrack === Track.SFW ? "bg-[#e4fbf4]" : "bg-white/70"}`}>
-              <p className="text-xs font-black text-[#006b64]">SFW</p>
-              <p className="text-2xl font-black text-[#006b64]">{remainingVotes[Track.SFW]}</p>
-              <p className="text-xs font-bold text-[#5b5047]">已用 {voteUsage[Track.SFW]} / {voteLimit[Track.SFW]}</p>
-            </div>
-            <div className={`rounded-md px-3 py-2 ${selectedTrack === Track.NSFW ? "bg-[#ffe8e2]" : "bg-white/70"}`}>
-              <p className="text-xs font-black text-[#b23a24]">NSFW</p>
-              <p className="text-2xl font-black text-[#b23a24]">{remainingVotes[Track.NSFW]}</p>
-              <p className="text-xs font-bold text-[#5b5047]">已用 {voteUsage[Track.NSFW]} / {voteLimit[Track.NSFW]}</p>
-            </div>
-          </div>
-        </aside>
+        <VoteQuotaPanel
+          key={`${voteUsage[Track.SFW]}:${voteUsage[Track.NSFW]}:${voteLimit[Track.SFW]}:${voteLimit[Track.NSFW]}:${selectedTrack}`}
+          initialUsage={{ NSFW: voteUsage[Track.NSFW], SFW: voteUsage[Track.SFW] }}
+          limit={{ NSFW: voteLimit[Track.NSFW], SFW: voteLimit[Track.SFW] }}
+          selectedTrack={selectedTrack}
+          voteMode={contest.voteMode}
+        />
       ) : null}
       <section className="panel grid gap-3 p-4">
         <div className="flex flex-wrap items-center gap-2">

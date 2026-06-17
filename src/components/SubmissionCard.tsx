@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionErrorDialog } from "@/components/ActionErrorDialog";
+import { emitVoteQuotaChange } from "@/components/VoteQuotaPanel";
 import { Eye, Lock, MessageCircle, Sparkles, ThumbsUp, X } from "lucide-react";
 
 type TrackName = "SFW" | "NSFW";
@@ -109,6 +110,8 @@ export function SubmissionCard({
       if (!response.ok) throw new Error(payload.error ?? "投票没有完成，请稍后重试。");
       if (typeof payload.hasVoted === "boolean" && payload.hasVoted !== nextHasVoted) {
         setOptimisticVote(previous);
+      } else {
+        emitVoteQuotaChange(currentTrack, nextHasVoted ? 1 : -1);
       }
     } catch (error) {
       setOptimisticVote(previous);
