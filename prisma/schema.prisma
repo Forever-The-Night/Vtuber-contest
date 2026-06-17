@@ -87,6 +87,7 @@ model Contest {
   resultsAt             DateTime
   showVotesDuringVoting Boolean      @default(false)
   showRanksDuringVoting Boolean      @default(false)
+  hideAuthorDuringVoting Boolean     @default(false)
   voteMode              VoteMode     @default(SIMPLE)
   totalVoteLimit        Int          @default(20)
   dailyVoteLimit        Int          @default(20)

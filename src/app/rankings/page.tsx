@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Track } from "@prisma/client";
 import { EmptyState } from "@/components/EmptyState";
 import { RankingsBoardClient } from "@/components/RankingsBoardClient";
-import { shouldShowRanks, shouldShowVotes } from "@/lib/contest/rules";
+import { getContestPhase, shouldShowRanks, shouldShowVotes } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +18,7 @@ export default async function RankingsPage() {
   }
 
   const canShow = shouldShowRanks(contest) || shouldShowVotes(contest);
+  const hideAuthorName = getContestPhase(contest) === "voting" && contest.hideAuthorDuringVoting;
   const submissions = await prisma.submission.findMany({
     where: { contestId: contest.id, status: "ACTIVE" },
     include: { _count: { select: { votes: true } }, author: { select: { nickname: true } } },
@@ -25,7 +26,7 @@ export default async function RankingsPage() {
   const ranked = submissions
     .sort((a, b) => b._count.votes - a._count.votes)
     .map((submission) => ({
-      authorName: submission.author.nickname,
+      authorName: hideAuthorName ? "匿名作者" : submission.author.nickname,
       id: submission.id,
       imageUrl: submission.imageUrl,
       title: submission.title,

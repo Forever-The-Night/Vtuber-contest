@@ -70,6 +70,7 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
   if (phase !== "voting") redirect("/dashboard");
 
   const selectedTrack: Track = !user || requestedTrack === "sfw" ? Track.SFW : Track.NSFW;
+  const hideAuthorName = phase === "voting" && contest.hideAuthorDuringVoting;
 
   const submissions = await prisma.submission.findMany({
     where: { contestId: contest.id, status: "ACTIVE", ...(user ? {} : { track: Track.SFW }) },
@@ -205,7 +206,7 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
       </section>
       <SubmissionGrid
         items={filteredSubmissions.map((submission) => ({
-          authorName: submission.author.nickname,
+          authorName: hideAuthorName ? "匿名作者" : submission.author.nickname,
           canVote: canVote && (remainingVotes[submission.track] > 0 || votedSubmissionIds.has(submission.id)),
           comments: submission._count.comments,
           description: submission.description,

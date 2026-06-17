@@ -203,10 +203,9 @@ textarea {
 }
 
 .vote-quota-panel {
-  position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
-  z-index: 30;
+  position: static;
+  justify-self: end;
+  width: fit-content;
 }
 
 .announcement-modal-backdrop {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { castVote, createComment } from "@/app/actions";
 import { getSessionUser } from "@/lib/auth/session";
-import { canViewSubmission, shouldShowVotes } from "@/lib/contest/rules";
+import { canViewSubmission, getContestPhase, shouldShowVotes } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
@@ -40,6 +40,8 @@ export default async function SubmissionPage({ params }: { params: Promise<{ id:
   });
 
   const showVotes = shouldShowVotes(submission.contest);
+  const hideAuthorName = getContestPhase(submission.contest) === "voting" && submission.contest.hideAuthorDuringVoting;
+  const authorName = hideAuthorName ? "匿名作者" : submission.author.nickname;
 
   return (
     <main className="page-shell grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -52,7 +54,7 @@ export default async function SubmissionPage({ params }: { params: Promise<{ id:
           <div>
             <span className="inline-flex rounded-md bg-black/5 px-2 py-1 text-xs font-black">{submission.track}</span>
             <h1 className="mt-3 text-2xl font-black">{submission.title}</h1>
-            <p className="mt-1 text-sm font-bold text-[#6d6258]">{submission.vtuberName} / {submission.author.nickname}</p>
+            <p className="mt-1 text-sm font-bold text-[#6d6258]">{submission.vtuberName} / {authorName}</p>
           </div>
           <div className="grid gap-2 text-sm font-medium text-[#6d6258]">
             <span>{submission._count.viewEvents + 1} 浏览</span>

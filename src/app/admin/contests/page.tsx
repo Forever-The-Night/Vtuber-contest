@@ -24,6 +24,7 @@ function CreateContestForm({ className, defaults, titleClassName }: { className:
       ))}
       <label className="inline-flex items-center gap-2 font-bold"><input name="showVotesDuringVoting" type="checkbox" /> 投票期显示票数</label>
       <label className="inline-flex items-center gap-2 font-bold"><input name="showRanksDuringVoting" type="checkbox" /> 投票期显示排名</label>
+      <label className="inline-flex items-center gap-2 font-bold"><input name="hideAuthorDuringVoting" type="checkbox" /> 投票期隐藏作者用户名</label>
       <label className="field">投票模式
         <select className="input" name="voteMode" defaultValue={VoteMode.SIMPLE}>
           <option value={VoteMode.SIMPLE}>一次性总票数</option>
@@ -90,6 +91,7 @@ export default async function AdminContestsPage() {
               <div className="flex flex-wrap gap-4 text-sm font-black">
                 <label className="inline-flex items-center gap-2"><input name="showVotesDuringVoting" type="checkbox" defaultChecked={contest.showVotesDuringVoting} /> 投票期显示票数</label>
                 <label className="inline-flex items-center gap-2"><input name="showRanksDuringVoting" type="checkbox" defaultChecked={contest.showRanksDuringVoting} /> 投票期显示排名</label>
+                <label className="inline-flex items-center gap-2"><input name="hideAuthorDuringVoting" type="checkbox" defaultChecked={contest.hideAuthorDuringVoting} /> 投票期隐藏作者用户名</label>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="field">投票模式
