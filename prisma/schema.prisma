@@ -181,3 +181,10 @@ model AdminAuditLog {
   detail    String?
   createdAt DateTime @default(now())
 }
+
+model SiteSetting {
+  id             String   @id @default("global")
+  inviteRequired Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

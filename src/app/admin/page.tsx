@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { updateInviteRequirementWithResult } from "@/app/actions";
+import { ActionResultForm } from "@/components/ActionResultForm";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
+import { getInviteRequiredSetting } from "@/lib/site-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +22,7 @@ function splitVtuberNames(value: string) {
 
 export default async function AdminPage() {
   const now = new Date();
+  const inviteRequired = await getInviteRequiredSetting();
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(now);
     date.setDate(now.getDate() - (6 - index));
@@ -86,6 +90,19 @@ export default async function AdminPage() {
           <Link className="button secondary" href="/admin/rankings/export">导出排行榜</Link>
         </div>
       </section>
+
+      <ActionResultForm action={updateInviteRequirementWithResult} className="panel grid gap-3 p-5" successMessage="注册设置已更新。">
+        <div>
+          <h2 className="text-xl font-black">注册设置</h2>
+          <p className="mt-1 text-sm font-bold text-[#6d6258]">控制新用户注册时是否强制校验邀请码。</p>
+        </div>
+        <label className="inline-flex items-center gap-2 font-bold">
+          <input name="inviteRequired" type="checkbox" defaultChecked={inviteRequired} />
+          开启邀请码注册
+        </label>
+        <p className="text-xs font-bold text-[#6d6258]">当前状态：{inviteRequired ? "已开启" : "未开启"}</p>
+        <button className="button w-fit" type="submit">保存设置</button>
+      </ActionResultForm>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="panel grid gap-5 p-5">

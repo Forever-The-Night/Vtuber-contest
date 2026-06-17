@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { registerUser } from "@/app/actions";
+import { getInviteRequiredSetting } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "注册",
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const inviteRequired = process.env.INVITE_REQUIRED === "true";
+  const inviteRequired = await getInviteRequiredSetting();
 
   return (
     <main className="page-shell grid place-items-center">

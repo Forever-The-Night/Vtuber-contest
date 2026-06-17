@@ -12,6 +12,7 @@ import { ActionResult, toActionError } from "@/lib/actions/result";
 import { canSubmit } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
 import { layoutNavigationTag } from "@/lib/layout-navigation";
+import { getInviteRequiredSetting, setInviteRequiredSetting } from "@/lib/site-settings";
 import { deleteImageUpload } from "@/lib/storage/uploads";
 
 function readString(formData: FormData, key: string) {
@@ -119,7 +120,8 @@ export async function registerUser(formData: FormData) {
 
   const whitelistEntry = await prisma.whitelistEntry.findUnique({ where: { qq } });
   if (!whitelistEntry) redirectWithError("/register", "这个 QQ 不在白名单中。");
-  if (process.env.INVITE_REQUIRED === "true" && whitelistEntry.inviteCode !== inviteCode) {
+  const inviteRequired = await getInviteRequiredSetting();
+  if (inviteRequired && whitelistEntry.inviteCode !== inviteCode) {
     redirectWithError("/register", "邀请码不正确。");
   }
 
@@ -216,6 +218,24 @@ export async function addWhitelistEntry(formData: FormData) {
     create: { inviteCode: inviteCode || null, qq },
   });
   revalidatePath("/admin/whitelist");
+}
+
+export async function updateInviteRequirement(formData: FormData) {
+  const admin = await requireAdmin();
+  const inviteRequired = readBoolean(formData, "inviteRequired");
+
+  await setInviteRequiredSetting(inviteRequired);
+  await prisma.adminAuditLog.create({
+    data: {
+      action: "site.inviteRequired",
+      actorId: admin.id,
+      detail: inviteRequired ? "enabled" : "disabled",
+      target: "global",
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/register");
 }
 
 export async function generateMissingInviteCodes() {
@@ -647,6 +667,10 @@ export async function importWhitelistWithResult(_previousState: ActionResult, fo
 
 export async function addWhitelistEntryWithResult(_previousState: ActionResult, formData: FormData): Promise<ActionResult> {
   return actionResult(() => addWhitelistEntry(formData));
+}
+
+export async function updateInviteRequirementWithResult(_previousState: ActionResult, formData: FormData): Promise<ActionResult> {
+  return actionResult(() => updateInviteRequirement(formData));
 }
 
 export async function generateMissingInviteCodesWithResult(previousState: ActionResult, formData: FormData): Promise<ActionResult> {
