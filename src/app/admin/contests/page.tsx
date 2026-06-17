@@ -30,8 +30,10 @@ function CreateContestForm({ className, defaults, titleClassName }: { className:
           <option value={VoteMode.DAILY_POOL}>每日票数</option>
         </select>
       </label>
-      <label className="field">本届总票数<input className="input" name="totalVoteLimit" type="number" min="1" defaultValue={20} /></label>
-      <label className="field">每日票数<input className="input" name="dailyVoteLimit" type="number" min="1" defaultValue={20} /></label>
+      <label className="field">SFW 本届总票数<input className="input" name="sfwTotalVoteLimit" type="number" min="1" defaultValue={20} /></label>
+      <label className="field">NSFW 本届总票数<input className="input" name="nsfwTotalVoteLimit" type="number" min="1" defaultValue={20} /></label>
+      <label className="field">SFW 每日票数<input className="input" name="sfwDailyVoteLimit" type="number" min="1" defaultValue={20} /></label>
+      <label className="field">NSFW 每日票数<input className="input" name="nsfwDailyVoteLimit" type="number" min="1" defaultValue={20} /></label>
       <button className="button" type="submit">创建届次</button>
     </ActionResultForm>
   );
@@ -96,8 +98,10 @@ export default async function AdminContestsPage() {
                     <option value={VoteMode.DAILY_POOL}>每日票数</option>
                   </select>
                 </label>
-                <label className="field">本届总票数<input className="input" name="totalVoteLimit" type="number" min="1" defaultValue={contest.totalVoteLimit} /></label>
-                <label className="field">每日票数<input className="input" name="dailyVoteLimit" type="number" min="1" defaultValue={contest.dailyVoteLimit} /></label>
+                <label className="field">SFW 本届总票数<input className="input" name="sfwTotalVoteLimit" type="number" min="1" defaultValue={contest.sfwTotalVoteLimit} /></label>
+                <label className="field">NSFW 本届总票数<input className="input" name="nsfwTotalVoteLimit" type="number" min="1" defaultValue={contest.nsfwTotalVoteLimit} /></label>
+                <label className="field">SFW 每日票数<input className="input" name="sfwDailyVoteLimit" type="number" min="1" defaultValue={contest.sfwDailyVoteLimit} /></label>
+                <label className="field">NSFW 每日票数<input className="input" name="nsfwDailyVoteLimit" type="number" min="1" defaultValue={contest.nsfwDailyVoteLimit} /></label>
               </div>
               <button className="button w-fit" type="submit">保存届次设置</button>
             </ActionResultForm>

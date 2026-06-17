@@ -48,6 +48,19 @@ function readPositiveInt(formData: FormData, key: string, fallback: number) {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
+function getTrackVoteLimit(contest: {
+  voteMode: VoteMode;
+  sfwDailyVoteLimit: number;
+  nsfwDailyVoteLimit: number;
+  sfwTotalVoteLimit: number;
+  nsfwTotalVoteLimit: number;
+}, track: Track) {
+  if (contest.voteMode === VoteMode.DAILY_POOL) {
+    return track === Track.NSFW ? contest.nsfwDailyVoteLimit : contest.sfwDailyVoteLimit;
+  }
+  return track === Track.NSFW ? contest.nsfwTotalVoteLimit : contest.sfwTotalVoteLimit;
+}
+
 function getTodayRange() {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
@@ -346,6 +359,10 @@ export async function createContest(formData: FormData) {
       title,
       dailyVoteLimit: readPositiveInt(formData, "dailyVoteLimit", 20),
       totalVoteLimit: readPositiveInt(formData, "totalVoteLimit", 20),
+      sfwDailyVoteLimit: readPositiveInt(formData, "sfwDailyVoteLimit", 20),
+      nsfwDailyVoteLimit: readPositiveInt(formData, "nsfwDailyVoteLimit", 20),
+      sfwTotalVoteLimit: readPositiveInt(formData, "sfwTotalVoteLimit", 20),
+      nsfwTotalVoteLimit: readPositiveInt(formData, "nsfwTotalVoteLimit", 20),
       voteMode: readString(formData, "voteMode") === VoteMode.DAILY_POOL ? VoteMode.DAILY_POOL : VoteMode.SIMPLE,
       votingEndAt: readDate(formData, "votingEndAt"),
       votingStartAt: readDate(formData, "votingStartAt"),
@@ -374,6 +391,10 @@ export async function updateContest(formData: FormData) {
       title,
       dailyVoteLimit: readPositiveInt(formData, "dailyVoteLimit", 20),
       totalVoteLimit: readPositiveInt(formData, "totalVoteLimit", 20),
+      sfwDailyVoteLimit: readPositiveInt(formData, "sfwDailyVoteLimit", 20),
+      nsfwDailyVoteLimit: readPositiveInt(formData, "nsfwDailyVoteLimit", 20),
+      sfwTotalVoteLimit: readPositiveInt(formData, "sfwTotalVoteLimit", 20),
+      nsfwTotalVoteLimit: readPositiveInt(formData, "nsfwTotalVoteLimit", 20),
       voteMode: readString(formData, "voteMode") === VoteMode.DAILY_POOL ? VoteMode.DAILY_POOL : VoteMode.SIMPLE,
       votingEndAt: readDate(formData, "votingEndAt"),
       votingStartAt: readDate(formData, "votingStartAt"),
@@ -573,10 +594,10 @@ export async function castVote(formData: FormData) {
   const usedVotes = await prisma.vote.count({
     where:
       submission.contest.voteMode === VoteMode.DAILY_POOL
-        ? { contestId: submission.contestId, createdAt: { gte: start, lt: end }, userId: user.id }
-        : { contestId: submission.contestId, userId: user.id },
+        ? { contestId: submission.contestId, createdAt: { gte: start, lt: end }, userId: user.id, submission: { track: submission.track } }
+        : { contestId: submission.contestId, userId: user.id, submission: { track: submission.track } },
   });
-  const limit = submission.contest.voteMode === VoteMode.DAILY_POOL ? submission.contest.dailyVoteLimit : submission.contest.totalVoteLimit;
+  const limit = getTrackVoteLimit(submission.contest, submission.track);
   if (usedVotes >= limit) throw new Error("剩余票数不足，取消已有投票后可以重新分配。");
 
   const headerStore = await headers();

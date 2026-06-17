@@ -13,6 +13,19 @@ function getTodayRange() {
   return { end, start };
 }
 
+function getTrackVoteLimit(contest: {
+  voteMode: VoteMode;
+  sfwDailyVoteLimit: number;
+  nsfwDailyVoteLimit: number;
+  sfwTotalVoteLimit: number;
+  nsfwTotalVoteLimit: number;
+}, track: "SFW" | "NSFW") {
+  if (contest.voteMode === VoteMode.DAILY_POOL) {
+    return track === "NSFW" ? contest.nsfwDailyVoteLimit : contest.sfwDailyVoteLimit;
+  }
+  return track === "NSFW" ? contest.nsfwTotalVoteLimit : contest.sfwTotalVoteLimit;
+}
+
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user) {
@@ -49,10 +62,10 @@ export async function POST(request: Request) {
     const usedVotes = await prisma.vote.count({
       where:
         submission.contest.voteMode === VoteMode.DAILY_POOL
-          ? { contestId: submission.contestId, createdAt: { gte: start, lt: end }, userId: user.id }
-          : { contestId: submission.contestId, userId: user.id },
+          ? { contestId: submission.contestId, createdAt: { gte: start, lt: end }, userId: user.id, submission: { track: submission.track } }
+          : { contestId: submission.contestId, userId: user.id, submission: { track: submission.track } },
     });
-    const limit = submission.contest.voteMode === VoteMode.DAILY_POOL ? submission.contest.dailyVoteLimit : submission.contest.totalVoteLimit;
+    const limit = getTrackVoteLimit(submission.contest, submission.track);
     if (usedVotes >= limit) {
       return NextResponse.json({ error: "剩余票数不足，取消已有投票后可以重新分配。" }, { status: 409 });
     }

@@ -34,13 +34,29 @@ function stableHash(value: string) {
   return hash >>> 0;
 }
 
-type VoteSearchParams = { sort?: string; voted?: string; vtuber?: string };
+function getTrackVoteLimit(contest: {
+  voteMode: VoteMode;
+  sfwDailyVoteLimit: number;
+  nsfwDailyVoteLimit: number;
+  sfwTotalVoteLimit: number;
+  nsfwTotalVoteLimit: number;
+}, track: Track) {
+  if (contest.voteMode === VoteMode.DAILY_POOL) {
+    return track === Track.NSFW ? contest.nsfwDailyVoteLimit : contest.sfwDailyVoteLimit;
+  }
+  return track === Track.NSFW ? contest.nsfwTotalVoteLimit : contest.sfwTotalVoteLimit;
+}
+
+type TrackChoice = "sfw" | "nsfw";
+
+type VoteSearchParams = { sort?: string; voted?: string; vtuber?: string; track?: string };
 
 export default async function VotePage({ searchParams }: { searchParams?: Promise<VoteSearchParams> }) {
   const query = await searchParams;
   const selectedVtuber = query?.vtuber?.trim() ?? "";
   const voteView = query?.voted === "yes" || query?.voted === "no" ? query.voted : "all";
   const sortMode = query?.sort === "random" || query?.sort === "popular" ? query.sort : "latest";
+  const requestedTrack: TrackChoice = query?.track === "nsfw" ? "nsfw" : "sfw";
   const [user, contest] = await Promise.all([
     getSessionUser(),
     prisma.contest.findFirst({ orderBy: { submissionStartAt: "desc" } }),
@@ -53,36 +69,49 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
   const phase = getContestPhase(contest);
   if (phase !== "voting") redirect("/dashboard");
 
+  const selectedTrack: Track = !user || requestedTrack === "sfw" ? Track.SFW : Track.NSFW;
+
   const submissions = await prisma.submission.findMany({
     where: { contestId: contest.id, status: "ACTIVE", ...(user ? {} : { track: Track.SFW }) },
     include: { _count: { select: { comments: true, viewEvents: true, votes: true } }, author: { select: { nickname: true } } },
     orderBy: { createdAt: "desc" },
   });
-  const votedSubmissionIds = user
-    ? new Set(
-        (await prisma.vote.findMany({
-          where: { contestId: contest.id, userId: user.id },
-          select: { submissionId: true },
-        })).map((vote) => vote.submissionId),
-      )
-    : new Set<string>();
+  const votedEntries = user
+    ? await prisma.vote.findMany({
+        where: { contestId: contest.id, userId: user.id },
+        select: { submission: { select: { track: true } }, submissionId: true },
+      })
+    : [];
+  const votedSubmissionIds = new Set(votedEntries.map((vote) => vote.submissionId));
   const todayRange = getTodayRange();
-  const voteUsage = user
-    ? await prisma.vote.count({
+  const voteUsageEntries = user
+    ? await prisma.vote.findMany({
         where:
           contest.voteMode === VoteMode.DAILY_POOL
             ? { contestId: contest.id, createdAt: { gte: todayRange.start, lt: todayRange.end }, userId: user.id }
             : { contestId: contest.id, userId: user.id },
+        select: { submission: { select: { track: true } } },
       })
-    : 0;
-  const voteLimit = contest.voteMode === VoteMode.DAILY_POOL ? contest.dailyVoteLimit : contest.totalVoteLimit;
-  const remainingVotes = Math.max(0, voteLimit - voteUsage);
+    : [];
+  const voteUsage = {
+    [Track.SFW]: voteUsageEntries.filter((vote) => vote.submission.track === Track.SFW).length,
+    [Track.NSFW]: voteUsageEntries.filter((vote) => vote.submission.track === Track.NSFW).length,
+  };
+  const voteLimit = {
+    [Track.SFW]: getTrackVoteLimit(contest, Track.SFW),
+    [Track.NSFW]: getTrackVoteLimit(contest, Track.NSFW),
+  };
+  const remainingVotes = {
+    [Track.SFW]: Math.max(0, voteLimit[Track.SFW] - voteUsage[Track.SFW]),
+    [Track.NSFW]: Math.max(0, voteLimit[Track.NSFW] - voteUsage[Track.NSFW]),
+  };
   const canVote = Boolean(user && phase === "voting");
   const visibleSubmissions = submissions.filter((submission) => canViewSubmission(submission, contest, user));
-  const vtuberOptions = Array.from(new Set(visibleSubmissions.flatMap((submission) => splitVtuberNames(submission.vtuberName)))).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+  const visibleByTrack = visibleSubmissions.filter((submission) => submission.track === selectedTrack);
+  const vtuberOptions = Array.from(new Set(visibleByTrack.flatMap((submission) => splitVtuberNames(submission.vtuberName)))).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
   const filteredByVtuber = selectedVtuber
-    ? visibleSubmissions.filter((submission) => splitVtuberNames(submission.vtuberName).includes(selectedVtuber))
-    : visibleSubmissions;
+    ? visibleByTrack.filter((submission) => splitVtuberNames(submission.vtuberName).includes(selectedVtuber))
+    : visibleByTrack;
   const filteredByVote = user && voteView === "yes"
     ? filteredByVtuber.filter((submission) => votedSubmissionIds.has(submission.id))
     : user && voteView === "no"
@@ -101,6 +130,8 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
     const nextVtuber = next.vtuber ?? selectedVtuber;
     const nextVoted = next.voted ?? voteView;
     const nextSort = next.sort ?? sortMode;
+    const nextTrack = (next.track ?? requestedTrack) as TrackChoice;
+    params.set("track", nextTrack);
     if (nextVtuber) params.set("vtuber", nextVtuber);
     if (nextVoted && nextVoted !== "all") params.set("voted", nextVoted);
     if (nextSort && nextSort !== "latest") params.set("sort", nextSort);
@@ -119,12 +150,30 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
       </section>
       {user && phase === "voting" ? (
         <aside className="vote-quota-panel rounded-lg border border-black/10 bg-[#fffaf2]/95 p-4 shadow-2xl backdrop-blur-md">
-          <p className="text-xs font-black text-[#6d6258]">{contest.voteMode === VoteMode.DAILY_POOL ? "今日剩余票数" : "本届剩余票数"}</p>
-          <p className="mt-1 text-4xl font-black text-[#ff5b2e]">{remainingVotes}</p>
-          <p className="mt-1 text-xs font-bold text-[#6d6258]">已用 {voteUsage} / {voteLimit}</p>
+          <p className="text-xs font-black text-[#6d6258]">{contest.voteMode === VoteMode.DAILY_POOL ? "今日剩余票数（分赛道）" : "本届剩余票数（分赛道）"}</p>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className={`rounded-md px-3 py-2 ${selectedTrack === Track.SFW ? "bg-[#e4fbf4]" : "bg-white/70"}`}>
+              <p className="text-xs font-black text-[#006b64]">SFW</p>
+              <p className="text-2xl font-black text-[#006b64]">{remainingVotes[Track.SFW]}</p>
+              <p className="text-xs font-bold text-[#5b5047]">已用 {voteUsage[Track.SFW]} / {voteLimit[Track.SFW]}</p>
+            </div>
+            <div className={`rounded-md px-3 py-2 ${selectedTrack === Track.NSFW ? "bg-[#ffe8e2]" : "bg-white/70"}`}>
+              <p className="text-xs font-black text-[#b23a24]">NSFW</p>
+              <p className="text-2xl font-black text-[#b23a24]">{remainingVotes[Track.NSFW]}</p>
+              <p className="text-xs font-bold text-[#5b5047]">已用 {voteUsage[Track.NSFW]} / {voteLimit[Track.NSFW]}</p>
+            </div>
+          </div>
         </aside>
       ) : null}
       <section className="panel grid gap-3 p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link className={`interactive-chip rounded-md px-3 py-2 text-sm font-black ${selectedTrack === Track.SFW ? "is-active bg-[#00a6a6] text-white" : "bg-black/5 text-[#5b5047]"}`} href={voteHref({ track: "sfw", vtuber: "" })}>SFW 赛道</Link>
+          {user ? (
+            <Link className={`interactive-chip rounded-md px-3 py-2 text-sm font-black ${selectedTrack === Track.NSFW ? "is-active bg-[#b23a24] text-white" : "bg-black/5 text-[#5b5047]"}`} href={voteHref({ track: "nsfw", vtuber: "" })}>NSFW 赛道</Link>
+          ) : (
+            <span className="rounded-md bg-black/5 px-3 py-2 text-sm font-black text-[#6d6258]">登录后可查看 NSFW 赛道</span>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           {[
             ["latest", "最新"],
@@ -157,7 +206,7 @@ export default async function VotePage({ searchParams }: { searchParams?: Promis
       <SubmissionGrid
         items={filteredSubmissions.map((submission) => ({
           authorName: submission.author.nickname,
-          canVote: canVote && (remainingVotes > 0 || votedSubmissionIds.has(submission.id)),
+          canVote: canVote && (remainingVotes[submission.track] > 0 || votedSubmissionIds.has(submission.id)),
           comments: submission._count.comments,
           description: submission.description,
           hasVoted: votedSubmissionIds.has(submission.id),
