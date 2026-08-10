@@ -22,7 +22,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         <label className="field">QQ 号<input className="input" name="qq" required /></label>
         <label className="field">站内昵称<input className="input" name="nickname" required /></label>
         <label className="field">密码<input className="input" name="password" type="password" required /></label>
-        <label className="field">邀请码<input className="input" name="inviteCode" required={inviteRequired} placeholder={inviteRequired ? "请输入管理员发放的邀请码" : "未开启时可留空"} /></label>
+        <label className="field">邀请码<input className="input" name="inviteCode" required={inviteRequired} placeholder={inviteRequired ? "私聊@岁己SUI 发送 邀请码 获取" : "未开启时可留空"} /></label>
         <button className="button" type="submit">注册并登录</button>
       </form>
     </main>

@@ -11,7 +11,7 @@ describe("RegisterPage invite code control", () => {
     expect(html).toContain('name="inviteCode"');
     expect(html).toContain("当前已开启邀请码注册");
     expect(html).toContain('required=""');
-    expect(html).toContain("请输入管理员发放的邀请码");
+    expect(html).toContain("私聊@岁己SUI 发送 邀请码 获取");
   });
 
   it("keeps inviteCode optional when INVITE_REQUIRED=false", async () => {
@@ -21,7 +21,7 @@ describe("RegisterPage invite code control", () => {
 
     expect(html).toContain('name="inviteCode"');
     expect(html).toContain("当前未开启邀请码强制校验");
-    expect(html).not.toContain("请输入管理员发放的邀请码");
+    expect(html).not.toContain("私聊@岁己SUI 发送 邀请码 获取");
     expect(html).toContain("未开启时可留空");
 
     const inviteInputStart = html.indexOf('name="inviteCode"');
