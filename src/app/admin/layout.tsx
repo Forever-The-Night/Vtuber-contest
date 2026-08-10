@@ -7,6 +7,7 @@ const links = [
   ["/admin/users", "用户"],
   ["/admin/contests", "届次"],
   ["/admin/announcements", "公告"],
+  ["/admin/group", "加群"],
   ["/admin/whitelist", "QQ 白名单"],
   ["/admin/vtubers", "VTuber 名单"],
   ["/admin/submissions", "作品"],

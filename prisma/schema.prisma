@@ -193,3 +193,16 @@ model SiteSetting {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model GroupConfig {
+  id              String   @id @default("global")
+  enabled         Boolean  @default(true)
+  questionEnabled Boolean  @default(false)
+  question        String?
+  answer          String?
+  qrCodeUrl       String?
+  qrStorageKey    String?
+  body            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

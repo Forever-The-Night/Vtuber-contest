@@ -11,9 +11,10 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { ActionResult, toActionError } from "@/lib/actions/result";
 import { canSubmit } from "@/lib/contest/rules";
 import { prisma } from "@/lib/db";
+import { GROUP_CONFIG_ID, saveGroupConfig } from "@/lib/group-config";
 import { layoutNavigationTag } from "@/lib/layout-navigation";
 import { getInviteRequiredSetting, setInviteRequiredSetting } from "@/lib/site-settings";
-import { deleteImageUpload } from "@/lib/storage/uploads";
+import { deleteImageUpload, saveImageUpload } from "@/lib/storage/uploads";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -249,6 +250,62 @@ export async function updateInviteRequirement(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/register");
+}
+
+export async function updateGroupConfig(formData: FormData) {
+  const admin = await requireAdmin();
+  const enabled = readBoolean(formData, "enabled");
+  const questionEnabled = readBoolean(formData, "questionEnabled");
+  const question = readString(formData, "question");
+  const answer = readString(formData, "answer");
+  const body = readString(formData, "body");
+  const clearQrCode = readBoolean(formData, "clearQrCode");
+  const existing = await prisma.groupConfig.findUnique({ where: { id: GROUP_CONFIG_ID } });
+
+  let qrCodeUrl = existing?.qrCodeUrl ?? null;
+  let qrStorageKey = existing?.qrStorageKey ?? null;
+
+  const image = formData.get("qrCode");
+  if (image instanceof File && image.size > 0) {
+    if (!allowedImageTypes.has(image.type)) throw new Error("只支持 PNG、JPEG 或 WebP 图片。");
+    if (image.size > maxUploadBytes) throw new Error("图片文件过大，请压缩到 18MB 以内后再上传。");
+    const imageBuffer = Buffer.from(await image.arrayBuffer());
+    const saved = await saveImageUpload(image, imageBuffer);
+    qrCodeUrl = saved.imageUrl;
+    qrStorageKey = saved.storageKey;
+    if (existing?.qrStorageKey && existing.qrStorageKey !== saved.storageKey) {
+      await deleteImageUpload(existing.qrStorageKey).catch(() => undefined);
+    }
+  }
+
+  if (clearQrCode) {
+    if (existing?.qrStorageKey) {
+      await deleteImageUpload(existing.qrStorageKey).catch(() => undefined);
+    }
+    qrCodeUrl = null;
+    qrStorageKey = null;
+  }
+
+  await saveGroupConfig({
+    answer: answer || null,
+    body: body || null,
+    enabled,
+    qrCodeUrl,
+    qrStorageKey,
+    question: question || null,
+    questionEnabled,
+  });
+  await prisma.adminAuditLog.create({
+    data: {
+      action: "group.update",
+      actorId: admin.id,
+      detail: `enabled=${enabled}`,
+      target: "global",
+    },
+  });
+  revalidateLayoutNavigation();
+  revalidatePath("/admin/group");
+  revalidatePath("/group");
 }
 
 export async function generateMissingInviteCodes() {
@@ -694,6 +751,10 @@ export async function addWhitelistEntryWithResult(_previousState: ActionResult, 
 
 export async function updateInviteRequirementWithResult(_previousState: ActionResult, formData: FormData): Promise<ActionResult> {
   return actionResult(() => updateInviteRequirement(formData));
+}
+
+export async function updateGroupConfigWithResult(_previousState: ActionResult, formData: FormData): Promise<ActionResult> {
+  return actionResult(() => updateGroupConfig(formData));
 }
 
 export async function generateMissingInviteCodesWithResult(previousState: ActionResult, formData: FormData): Promise<ActionResult> {

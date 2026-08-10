@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ImageUp, LogOut, Megaphone, Shield, ThumbsUp, Trophy, UserRound, X } from "lucide-react";
+import { ImageUp, LogOut, Megaphone, Shield, ThumbsUp, Trophy, UserRound, Users, X } from "lucide-react";
 import { logoutUser } from "@/app/actions";
 
 type NavUser = { nickname: string; role: "USER" | "ADMIN" } | null;
@@ -25,11 +25,13 @@ export function AppNavLinks({
   announcements,
   canEnterSubmit,
   canEnterVote,
+  groupEnabled,
   user,
 }: {
   announcements: AnnouncementNav[];
   canEnterSubmit: boolean;
   canEnterVote: boolean;
+  groupEnabled: boolean;
   user: NavUser;
 }) {
   const pathname = usePathname();
@@ -64,6 +66,11 @@ export function AppNavLinks({
 
   return (
     <div className="app-nav-links flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
+      {groupEnabled ? (
+        <Link className={navClass(pathname.startsWith("/group"), effectivePendingHref === "/group")} href="/group" aria-current={pathname.startsWith("/group") ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/group")}>
+          <Users size={16} /> 加群
+        </Link>
+      ) : null}
       <Link className={navClass(isRankings, effectivePendingHref === "/rankings")} href="/rankings" aria-current={isRankings ? "page" : undefined} prefetch={false} onClick={() => markNavigation("/rankings")}>
         <Trophy size={16} /> 排名
       </Link>

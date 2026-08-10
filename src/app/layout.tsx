@@ -54,6 +54,7 @@ export default async function RootLayout({
               announcements={navigation.announcements}
               canEnterSubmit={navigation.canEnterSubmit}
               canEnterVote={navigation.canEnterVote}
+              groupEnabled={navigation.groupEnabled}
               user={user ? { nickname: user.nickname, role: user.role } : null}
             />
           </nav>
